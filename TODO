@@ -1,0 +1,22 @@
+==========================
+Django Standard Image TODO
+==========================
+* Check if this bug still exists after current changes:
+http://code.google.com/p/django-stdimage/issues/detail?id=37#c1
+What steps will reproduce the problem?
+When I use dynamic upload_to if i save there isn't problem but when i
+retrieve a thumbnail of an image saved the days before it tryes to retrive
+it in a folder with the actual date.
+
+* StdImageFields on models revert to regular ImageField when pulled from cache.
+What steps will reproduce the problem? -- not tested
+1. cache a queryset for a model with a stdimage field.
+2. retrieve the objects from the cache
+3. attempt to display a thumbnail of a stdimagefield.
+http://code.google.com/p/django-stdimage/issues/detail?id=23
+
+* Model inheritance not supported -- not tested
+http://code.google.com/p/django-stdimage/issues/detail?id=44
+
+* Thumbnail gen doesn't work in chrome -- not tested
+http://code.google.com/p/django-stdimage/issues/detail?id=36#c0

@@ -1,11 +1,25 @@
 from django.db.models.fields.files import ImageField
 from django.db.models import signals
-from django.conf import settings
 from django.core.files.storage import FileSystemStorage
+from django.utils._os import safe_join
 from widgets import DelAdminFileWidget
 from forms import StdImageFormField
 import os, shutil
 
+# Field intropsection for use with south
+try:
+    from south.modelsinspector import add_introspection_rules
+    rules = [
+      (
+        (ImageField,),
+        [],
+        {},
+      )
+    ]
+    add_introspection_rules(rules, ["^stdimage\.fields"])
+except ImportError:
+    pass
+    
 class ThumbnailField:
     '''
     Instances of this class will be used to access data of the
@@ -18,6 +32,7 @@ class ThumbnailField:
     def path(self):
         return self.storage.path(self.name)
 
+    @property
     def url(self):
         return self.storage.url(self.name)
 
@@ -75,28 +90,50 @@ class StdImageField(ImageField):
                 img = ImageOps.fit(img, (size['width'], size['height']), Image.ANTIALIAS)
             else:
                 img.thumbnail((size['width'], size['height']), Image.ANTIALIAS)
-            try:
-                img.save(filename, optimize=1)
-            except IOError:
+            if img.format in ("JPEG", "PNG"):
+                try:
+                    img.save(filename, optimize=1)
+                except IOError:
+                    img.save(filename)
+            else:
                 img.save(filename)
+            return img.size[WIDTH], img.size[HEIGHT] 
 
     def _rename_resize_image(self, instance=None, **kwargs):
         '''
         Renames the image, and calls methods to resize and create the thumbnail
         '''
         if getattr(instance, self.name):
+            # Could add a property to django.db.models.fields.files.FileField
+            # to support custom storage parameter sent to FileField constructor,
+            # but the default is default_storage so this should work in most cases
+            from django.core.files.storage import default_storage
+            
             filename = getattr(instance, self.name).path
             ext = os.path.splitext(filename)[1].lower().replace('jpg', 'jpeg')
             dst = self.generate_filename(instance, '%s_%s%s' % (self.name, instance._get_pk_val(), ext))
-            dst_fullpath = os.path.join(settings.MEDIA_ROOT, dst)
-            if os.path.abspath(filename) != os.path.abspath(dst_fullpath):
-                os.rename(filename, dst_fullpath)
+            dst_fullpath = default_storage.path(dst)
+            
+            # This issue patch not necessary because default_storage.path does same thing as calling .path on the instance
+            #os.path.normcase(os.path.abspath(filename)) != os.path.normcase(os.path.abspath(dst_fullpath))            
+            if filname != dst_fullpath:
+                if os.path.exists(dst_fullpath):
+                    os.remove(dst_fullpath)
+                if self.default and (filename == default_storage.path(self.default)):
+                    shutil.copyfile(filename, dst_fullpath)
+                else:
+                    os.renames(filename, dst_fullpath)
                 if self.size:
-                    self._resize_image(dst_fullpath, self.size)
+                    new_width, new_height = self._resize_image(dst_fullpath, self.size)
+                    # Update width/height fields if needed
+                    if self.width_field:
+                        setattr(instance, self.width_field, new_width)
+                    if self.height_field:
+                        setattr(instance, self.height_field, new_height)
                 if self.thumbnail_size:
                     thumbnail_filename = self._get_thumbnail_filename(dst_fullpath)
                     shutil.copyfile(dst_fullpath, thumbnail_filename)
-                    self._resize_image(thumbnail_filename, self.thumbnail_size)
+                    new_width, new_height = self._resize_image(thumbnail_filename, self.thumbnail_size)
                 setattr(instance, self.attname, dst)
                 instance.save()
 
@@ -107,11 +144,10 @@ class StdImageField(ImageField):
         "path", "url"... properties can be used
         '''
         if getattr(instance, self.name):
-            filename = self.generate_filename(instance, os.path.basename(getattr(instance, self.name).path))
+            filename = unicode(getattr(instance, self.name))
             thumbnail_filename = self._get_thumbnail_filename(filename)
             thumbnail_field = ThumbnailField(thumbnail_filename)
             setattr(getattr(instance, self.name), 'thumbnail', thumbnail_field)
-
 
     def formfield(self, **kwargs):
         '''
@@ -127,13 +163,16 @@ class StdImageField(ImageField):
             is selected
         '''
         if data == '__deleted__':
-            filename = getattr(instance, self.name).path
-            if os.path.exists(filename):
-                os.remove(filename)
-            thumbnail_filename = self._get_thumbnail_filename(filename)
-            if os.path.exists(thumbnail_filename):
-                os.remove(thumbnail_filename)
-            setattr(instance, self.name, None)
+            try:
+                filename = getattr(instance, self.name).path
+                setattr(instance, self.name, None)
+                if os.path.exists(filename):
+                    os.remove(filename)
+                thumbnail_filename = self._get_thumbnail_filename(filename)
+                if os.path.exists(thumbnail_filename):
+                    os.remove(thumbnail_filename)
+            except:
+                pass
         else:
             super(StdImageField, self).save_form_data(instance, data)
 
