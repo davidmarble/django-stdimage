@@ -116,7 +116,7 @@ class StdImageField(ImageField):
             
             # This issue patch not necessary because default_storage.path does same thing as calling .path on the instance
             #os.path.normcase(os.path.abspath(filename)) != os.path.normcase(os.path.abspath(dst_fullpath))            
-            if filname != dst_fullpath:
+            if filename != dst_fullpath:
                 if os.path.exists(dst_fullpath):
                     os.remove(dst_fullpath)
                 if self.default and (filename == default_storage.path(self.default)):
