@@ -11,12 +11,13 @@ Version 0.1.12.dev2, 01/Nov/2010:
 ----------------------------
 * Fork by David Marble
 * Fixed the following issues with patches or new code:
-http://code.google.com/p/django-stdimage/issues/detail?id=41
-http://code.google.com/p/django-stdimage/issues/detail?id=25
 http://code.google.com/p/django-stdimage/issues/detail?id=17
-http://code.google.com/p/django-stdimage/issues/detail?id=24
 http://code.google.com/p/django-stdimage/issues/detail?id=21
-http://code.google.com/p/django-stdimage/issues/detail?id=46
+http://code.google.com/p/django-stdimage/issues/detail?id=24
+http://code.google.com/p/django-stdimage/issues/detail?id=25
 http://code.google.com/p/django-stdimage/issues/detail?id=26
+http://code.google.com/p/django-stdimage/issues/detail?id=28
 http://code.google.com/p/django-stdimage/issues/detail?id=30
 http://code.google.com/p/django-stdimage/issues/detail?id=35
+http://code.google.com/p/django-stdimage/issues/detail?id=41
+http://code.google.com/p/django-stdimage/issues/detail?id=46

@@ -103,7 +103,7 @@ class StdImageField(ImageField):
         '''
         Renames the image, and calls methods to resize and create the thumbnail
         '''
-        if getattr(instance, self.name):
+        if not kwargs.get('raw', None) and getattr(instance, self.name):
             # Could add a property to django.db.models.fields.files.FileField
             # to support custom storage parameter sent to FileField constructor,
             # but the default is default_storage so this should work in most cases
