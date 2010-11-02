@@ -19,4 +19,7 @@ http://code.google.com/p/django-stdimage/issues/detail?id=23
 http://code.google.com/p/django-stdimage/issues/detail?id=44
 
 * Thumbnail gen doesn't work in chrome -- not tested
-http://code.google.com/p/django-stdimage/issues/detail?id=36#c0
+http://code.google.com/p/django-stdimage/issues/detail?id=36
+
+* Unicode filenames on uploads
+http://code.google.com/p/django-stdimage/issues/detail?id=39
