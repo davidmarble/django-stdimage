@@ -122,7 +122,12 @@ class StdImageField(ImageField):
                 if self.default and (filename == default_storage.path(self.default)):
                     shutil.copyfile(filename, dst_fullpath)
                 else:
-                    os.renames(filename, dst_fullpath)
+                    if os.path.exists(filename):
+                        os.renames(filename, dst_fullpath)
+                    else:
+                        # File is missing for some reason, so delete all images
+                        self._delete_images()
+                        return
                 if self.size:
                     new_width, new_height = self._resize_image(dst_fullpath, self.size)
                     # Update width/height fields if needed
@@ -149,6 +154,21 @@ class StdImageField(ImageField):
             thumbnail_field = ThumbnailField(thumbnail_filename)
             setattr(getattr(instance, self.name), 'thumbnail', thumbnail_field)
 
+    def _delete_images(self, **kwargs):
+        '''
+        Delete images associated with the field
+        '''
+        try:
+            filename = getattr(instance, self.name).path
+            setattr(instance, self.name, None)
+            if os.path.exists(filename):
+                os.remove(filename)
+            thumbnail_filename = self._get_thumbnail_filename(filename)
+            if os.path.exists(thumbnail_filename):
+                os.remove(thumbnail_filename)
+        except:
+            pass
+
     def formfield(self, **kwargs):
         '''
         Specify form field and widget to be used on the forms
@@ -163,16 +183,7 @@ class StdImageField(ImageField):
             is selected
         '''
         if data == '__deleted__':
-            try:
-                filename = getattr(instance, self.name).path
-                setattr(instance, self.name, None)
-                if os.path.exists(filename):
-                    os.remove(filename)
-                thumbnail_filename = self._get_thumbnail_filename(filename)
-                if os.path.exists(thumbnail_filename):
-                    os.remove(thumbnail_filename)
-            except:
-                pass
+            self._delete_images()
         else:
             super(StdImageField, self).save_form_data(instance, data)
 
