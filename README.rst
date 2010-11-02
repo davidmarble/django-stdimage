@@ -39,37 +39,37 @@ In your model
 -------------
 ::
 
-	from stdimage.fields import StdImageField
+    from stdimage.fields import StdImageField
 
-	class MyClass(models.Model):
+    class MyClass(models.Model):
         # works just like ImageField
-		image1 = StdImageField(upload_to='path/to/img') 
+        image1 = StdImageField(upload_to='path/to/img') 
 
-		# can be deleted throwgh admin
-		image2 = StdImageField(upload_to='path/to/img', blank=True) 
+        # can be deleted throwgh admin
+        image2 = StdImageField(upload_to='path/to/img', blank=True) 
 
-		# resizes image to maximum size to fit a 640x480 area
-		image3 = StdImageField(upload_to='path/to/img', size=(640, 480)) 
-		
-		# resizes image to 640x480 croping if necessary
-		image4 = StdImageField(upload_to='path/to/img', size=(640, 480, True)) 
+        # resizes image to maximum size to fit a 640x480 area
+        image3 = StdImageField(upload_to='path/to/img', size=(640, 480)) 
+        
+        # resizes image to 640x480 croping if necessary
+        image4 = StdImageField(upload_to='path/to/img', size=(640, 480, True)) 
 
         # creates a thumbnail resized to maximum size to fit a 100x75 area
-		image5 = StdImageField(upload_to='path/to/img', 
+        image5 = StdImageField(upload_to='path/to/img', 
             thumbnail_size=(100, 75))
 
         # creates a thumbnail resized to 100x100 croping if necessary
-		image6 = StdImageField(upload_to='path/to/img', 
+        image6 = StdImageField(upload_to='path/to/img', 
             thumbnail_size=(100, 100, True)) 
 
         # all previous features in one declaration
-		image_all = StdImageField(upload_to='path/to/img', blank=True, 
+        image_all = StdImageField(upload_to='path/to/img', blank=True, 
             size=(640, 480), thumbnail_size=(100, 100, True)) 
 
 
 For using generated thumbnail in templates use "myimagefield.thumbnail". Example:::
 
-	<a href="{{ object.myimage.url }}"><img alt="" src="{{ object.myimage.thumbnail.url }}"/></a>
+    <a href="{{ object.myimage.url }}"><img alt="" src="{{ object.myimage.thumbnail.url }}"/></a>
 
 
 About image names
