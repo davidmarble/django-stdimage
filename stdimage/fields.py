@@ -97,7 +97,7 @@ class StdImageField(ImageField):
                     img.save(filename)
             else:
                 img.save(filename)
-            return img.size[WIDTH], img.size[HEIGHT] 
+        return img.size[WIDTH], img.size[HEIGHT] 
 
     def _rename_resize_image(self, instance=None, **kwargs):
         '''
@@ -119,7 +119,7 @@ class StdImageField(ImageField):
             if filename != dst_fullpath:
                 if os.path.exists(dst_fullpath):
                     os.remove(dst_fullpath)
-                if self.default and (filename == default_storage.path(self.default)):
+                if self.has_default() and (filename == default_storage.path(self.get_default())):
                     shutil.copyfile(filename, dst_fullpath)
                 else:
                     if os.path.exists(filename):
@@ -131,10 +131,11 @@ class StdImageField(ImageField):
                 if self.size:
                     new_width, new_height = self._resize_image(dst_fullpath, self.size)
                     # Update width/height fields if needed
-                    if self.width_field:
-                        setattr(instance, self.width_field, new_width)
-                    if self.height_field:
-                        setattr(instance, self.height_field, new_height)
+                    if new_width:
+                        if self.width_field:
+                            setattr(instance, self.width_field, new_width)
+                        if self.height_field:
+                            setattr(instance, self.height_field, new_height)
                 if self.thumbnail_size:
                     thumbnail_filename = self._get_thumbnail_filename(dst_fullpath)
                     shutil.copyfile(dst_fullpath, thumbnail_filename)
